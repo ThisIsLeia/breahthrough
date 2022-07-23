@@ -6,7 +6,6 @@
 # 出場:
 #     停利點30點
 #     停損點10點
-
 import sys
 
 
@@ -18,13 +17,32 @@ class StrategyBase:
         if self.NAME is None:
             raise TypeError('NAME argument must be defined')
 
-    def _getdata(self, filename='D:/Course/python/strategies/crawler/tidied/taiwanfuture_all_TX.csv'):
+    def _getdata(self, filename):
         """讀取資料"""
+        raise NotImplementedError
+
+    def _strategy(self, tidy_data):
+        raise NotImplementedError
+
+    def _performance(self, profit_list):
+        raise NotImplementedError
+
+    def result(self):
+        """入口"""
+        data = self._getdata()
+        profit = self._strategy(data)
+        self._performance(profit)
+        return 'success!'
+
+
+class TaiwanFuture(StrategyBase):
+    """台灣指數期貨"""
+    NAME = 'future'
+    def _getdata(self, filename='D:/Course/python/strategies/crawler/tidied/taiwanfuture_all_TX.csv'):
         # 0日期 1商品 2到期 3時間 4價格
         data = open(filename).readlines()
         tidy_data = [line.strip('\n').split(',') for line in data]
         return tidy_data
-
     def _strategy(self, tidy_data):
         """策略內容"""
         profit_list = []
@@ -110,7 +128,6 @@ class StrategyBase:
                                   '賣出時間:', cover_time, '賣出價:', cover_price, '損益:', profit)
             profit_list.append(profit)
         return profit_list
-
     def _performance(self, profit_list):
         """績效"""
         # 總損益
@@ -146,17 +163,6 @@ class StrategyBase:
         print('MaxConLoss:', win_rate)
         return 'analysis finished'
 
-    def result(self):
-        """入口"""
-        data = self._getdata()
-        profit = self._strategy(data)
-        self._performance(profit)
-        return 'success!'
-
-
-class TaiwanFuture(StrategyBase):
-    """台灣指數期貨"""
-    NAME = 'future'
 
 
 class StockFuture(StrategyBase):
